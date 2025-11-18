@@ -1,0 +1,50 @@
+name: Pipeline Prova (Zip + Deploy)
+
+on:
+  # 1. Gatilho Manual (Requisito da prova)
+  workflow_dispatch:
+  
+  # 2. Gatilho Automático ao alterar o site (Requisito da prova)
+  push:
+    branches:
+      - main
+
+# Permissões para o GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  prova-job:
+    runs-on: ubuntu-latest
+    steps:
+      # Passo 1: Baixar o código
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      # Passo 2: Gerar o ZIP (Requisito da prova)
+      # Compacta tudo (.) exceto a pasta do git
+      - name: Gerar arquivo ZIP
+        run: zip -r projeto-completo.zip . -x ".git/*" ".github/*"
+
+      # Passo 3: Guardar o ZIP para download (Evidência que gerou)
+      - name: Upload do ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: arquivo-zip-gerado
+          path: projeto-completo.zip
+
+      # Passo 4: Configurar Pages
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v4
+
+      # Passo 5: Upload do site
+      - name: Upload do site para o Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      # Passo 6: Deploy Final
+      - name: Deploy no GitHub Pages
+        uses: actions/deploy-pages@v4
